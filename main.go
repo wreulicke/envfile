@@ -42,5 +42,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	syscall.Exec(path, os.Args[2:], os.Environ())
+	err := syscall.Exec(path, os.Args[2:], os.Environ())
+	if err != nil {
+		fmt.Println(fmt.Sprintf("envfile: %s", err.Error()))
+		os.Exit(1)
+	}
 }
