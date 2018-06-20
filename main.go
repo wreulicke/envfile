@@ -10,17 +10,19 @@ import (
 	"syscall"
 )
 
-func main() {
+func mainInternal() int {
 	if len(os.Args) < 3 {
 		fmt.Println("Usage: envfile foo.env command")
-		os.Exit(1)
+		return 1
 	}
 
 	fp, err := os.Open(os.Args[1])
 	if err != nil {
 		fmt.Println(fmt.Sprintf("envfile: %s", err.Error()))
-		os.Exit(1)
+		return 1
 	}
+
+	defer fp.Close()
 
 	reader := bufio.NewReaderSize(fp, 4096)
 	for {
@@ -32,19 +34,25 @@ func main() {
 			break
 		} else if err != nil {
 			fmt.Println(fmt.Sprintf("envfile: %s", err.Error()))
-			os.Exit(1)
+			return 1
 		}
 	}
 
 	path, err := exec.LookPath(os.Args[2])
 	if err != nil {
 		fmt.Println(fmt.Sprintf("envfile: %s", err.Error()))
-		os.Exit(1)
+		return 1
 	}
 
 	err = syscall.Exec(path, os.Args[2:], os.Environ())
 	if err != nil {
 		fmt.Println(fmt.Sprintf("envfile: %s", err.Error()))
-		os.Exit(1)
+		return 1
 	}
+
+	return 0
+}
+
+func main() {
+	os.Exit(mainInternal())
 }
